@@ -3,11 +3,29 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <stdio.h>
+
+#if defined(_WIN32) || defined(WIN32)
+
+#include <io.h>
+
+extern "C" {
+#include "windows-mmap.h"
+};
+
+#define lseek64	_lseeki64
+
+#pragma warning( disable : 4996 )
+
+#else
+
+#include <unistd.h>
+#include <sys/mman.h>
+
+
+#endif
 
 /*
   Linux only due to mmap
