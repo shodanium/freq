@@ -1,0 +1,7 @@
+condense_wildcard_suffixes = true
+hard_tabs = false
+indent_style = "Visual"
+imports_layout = "HorizontalVertical"
+merge_imports = true
+tab_spaces = 4
+use_try_shorthand = true

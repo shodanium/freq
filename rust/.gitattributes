@@ -1,0 +1,31 @@
+# Original at: https://github.com/scala/scala/blob/master/.gitattributes
+# fallback on built-in heuristics
+# this must be first so later entries will override it
+* text=auto
+
+# These files are text and should be normalized (convert crlf => lf)
+*.c       text
+*.check   text
+*.conf    text
+*.css     text
+*.flags   text
+*.html    text
+*.js      text
+*.policy  text
+*.rs      text
+*.sh      text
+*.txt     text
+*.xml     text
+
+# Windows-specific files get windows endings
+*.bat     eol=crlf
+*.cmd     eol=crlf
+
+# Some binary file types for completeness
+# (binary is a macro for -text -diff)
+*.so      binary
+*.dll     binary
+*.gif     binary
+*.jar     binary
+*.jpg     binary
+*.png     binary

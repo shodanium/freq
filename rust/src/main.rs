@@ -16,7 +16,7 @@ struct Opts {
 }
 
 struct FreqDict {
-    dict: FnvHashMap<String, u32>,
+    dict: FnvHashMap<Box<[u8]>, u32>,
 }
 
 fn main() {
@@ -69,18 +69,20 @@ impl FreqDict {
 
     fn add_word(&mut self, word: &[u8]) {
         if !word.is_empty() {
-            let key = std::str::from_utf8(&word).unwrap();
-            if let Some(counter) = self.dict.get_mut(key) {
+            if let Some(counter) = self.dict.get_mut(word) {
                 *counter += 1;
             } else {
-                self.dict.insert(key.to_owned(), 1);
+                self.dict.insert(word.into(), 1);
             }
         }
     }
 
     fn get_freq(&self) -> Vec<(u32, &str)> {
         let mut freq = self.dict.iter()
-            .map(|(w, c)| (*c, w.as_str()))
+            .map(|(w, c)| {
+                let key = std::str::from_utf8(w).unwrap();
+                (*c, key)
+            })
             .collect::<Vec<_>>();
         freq.sort_unstable_by(|(c1, w1), (c2, w2)| {
             Ord::cmp(c1, c2).reverse().then_with(|| Ord::cmp(w1, w2))
