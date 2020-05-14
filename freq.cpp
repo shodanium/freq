@@ -128,6 +128,8 @@ int main(int argc, char** argv) {
         // end of word
         auto it = dict.find(key);
         if(it == dict.end()) {
+            // TODO: this could be broken if rehash happens
+            // switch to keeping pointers to std::pair
             it = dict.insert(it, {key, 1});
             sorted_list.emplace_back(it);
         } else {
