@@ -65,8 +65,10 @@ struct Trie {
     }
 
     static Trie* new_trie();
-
+    static size_t total;
 };
+
+size_t Trie::total = 0;
 
 Trie* Trie::new_trie() {
     constexpr size_t bsz = 2048;
@@ -80,7 +82,7 @@ Trie* Trie::new_trie() {
     }
 
     auto item = block + i;
-    ++i;
+    ++i; ++total;
     return item;
 }
 
@@ -180,7 +182,8 @@ int main(int argc, char** argv) {
     // last word
 
     close(fd);
-    std::cout << cnt << std::endl;
+    std::cout << "Total words seen: " << cnt << std::endl;
+    std::cout << "Total tries : " << Trie::total << ", size=" << sizeof(Trie) * Trie::total << std::endl;
 
 
     std::sort(words.begin(), words.end(), LessIterator());
