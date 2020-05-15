@@ -1,7 +1,6 @@
-#include <unordered_map>
 #include <vector>
+#include <array>
 #include <iostream>
-#include <fstream>
 #include <algorithm>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -28,11 +27,7 @@ extern "C" {
 #endif
 
 /*
-  Linux only due to mmap
-
-  to build
-
-  clang++ -std=c++11 -ggdb -O3 -march=haswell -flto -fwhole-program-vtables -DNDEBUG -mllvm -inline-threshold=5000 -fomit-frame-pointer freq.cpp -o freq
+  clang++ -std=c++11 -ggdb -O3 -march=haswell -flto -fwhole-program-vtables -DNDEBUG -mllvm -inline-threshold=5000 -fomit-frame-pointer freq02.cpp -o freq
  */
 
 int usage(char* process_name) {
@@ -163,7 +158,7 @@ int main(int argc, char** argv) {
             words.emplace_back(cur, std::string(start, len));
 
             // need to lowercase again to avoid buffering on each word
-            auto&text = words.back().text;
+            auto &text = words.back().text;
             for(size_t i = 0; i < len; ++i) {
                 text[i] = letters[text[i]];
             }
@@ -180,6 +175,20 @@ int main(int argc, char** argv) {
     }
 
     // last word
+    // TODO: do something about this dumb copy/paste after loop
+    if(start) {
+        if(cur->z == 0) {
+            // first time to see the word
+            words.emplace_back(cur, std::string(start, len));
+
+            // need to lowercase again to avoid buffering on each word
+            auto &text = words.back().text;
+            for(size_t i = 0; i < len; ++i) {
+                text[i] = letters[text[i]];
+            }
+        }
+        cur->z++;
+    }
 
     close(fd);
     std::cout << "Total words seen: " << cnt << std::endl;
