@@ -99,9 +99,9 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	Dict dict(5000000);
+	Dict dict(500000);
 	std::vector<std::string> all_strings;
-	all_strings.resize(500000);
+	all_strings.reserve(500000);
 
 	char buf[256];
 	size_t clen = 0;
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 		if (it == dict.end()) {
 			dict.insert(it, {key_hash, DictValue(count, 1)});
 			buf[clen] = 0;
-			all_strings[count] = buf;
+			all_strings.push_back(buf);
 			++count;
 		} else {
 			++(it->second.second);
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 		if (it == dict.end()) {
 			dict.insert(it, {key_hash, DictValue(count, 1)});
 			buf[clen] = 0;
-			all_strings[count] = buf;
+			all_strings.push_back(buf);
 			++count;
 		} else {
 			++(it->second.second);
