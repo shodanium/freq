@@ -77,7 +77,7 @@ struct IndicesIterator {
 };
 
 int main(int argc, char** argv) {
-    if(argc != 2) {
+    if(argc != 3) {
         exit(usage(argv[0]));
     }
 
@@ -164,7 +164,11 @@ int main(int argc, char** argv) {
     strings = &all_strings;
     std::sort(freqs.begin(), freqs.end(), IndicesIterator());//we can instead sort indices, ofc
 
-    FILE* out = fopen("out.txt", "w");
+	FILE *out = fopen(argv[2], "w");
+	if (!out) {
+		std::cerr << "Can't write file" << argv[2] << std::endl;
+		exit(1);
+	}
     for(auto i: freqs) {
         fprintf(out, "%d %s\n", i.second, all_strings[i.first].c_str());
     }

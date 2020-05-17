@@ -16,6 +16,7 @@ def run1(args, prog, RUNS=10):
 	t = sorted(t)
 	print('| %.3f..%.3fs | %.1f | %s |' % (t[0], t[-1], SIZE / t[0] / 1000000, prog))
 
+run1(['./bin/hack01cpp.exe'], 'hack01.cpp')
 run1(['./bin/freq01cpp.exe'], 'freq01.cpp')
 run1(['./bin/freq01rs.exe'], 'freq01.rs')
 run1(['./bin/freq01go.exe'], 'freq01.go')
