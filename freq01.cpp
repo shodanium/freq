@@ -101,9 +101,11 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	Dict dict(5000000);
+	const size_t effecient_size = 500000;
+	Dict dict(effecient_size);
+
 	std::vector<Dict::value_type *> sorted_list;
-	sorted_list.reserve(500000);
+	sorted_list.reserve(effecient_size);
 
 	size_t cnt = 0;
 	Key key;
