@@ -40,8 +40,15 @@
 
 #define MAP_POPULATE 0x4	
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
 int munmap(void *start, size_t length);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif
