@@ -3,26 +3,26 @@
 # this must be first so later entries will override it
 * text=auto
 
-# These files are text and should be normalized (convert crlf => lf)
-*.c          text
-*.check      text
-*.conf       text
-*.cpp        text
-*.css        text
-*.flags      text
-*.go         text
-*.html       text
-*.js         text
-*.md         text
-*.policy     text
-*.properties text
-*.rs         text
-*.sbt        text
-*.scala      text
-*.sh         text
-*.toml       text
-*.txt        text
-*.xml        text
+# For most text files lets just use LF
+*.c          eol=lf
+*.check      eol=lf
+*.conf       eol=lf
+*.cpp        eol=lf
+*.css        eol=lf
+*.flags      eol=lf
+*.go         eol=lf
+*.html       eol=lf
+*.js         eol=lf
+*.md         eol=lf
+*.policy     eol=lf
+*.properties eol=lf
+*.rs         eol=lf
+*.sbt        eol=lf
+*.scala      eol=lf
+*.sh         eol=lf
+*.toml       eol=lf
+*.txt        eol=lf
+*.xml        eol=lf
 
 # Windows-specific files get windows endings
 *.bat     eol=crlf
