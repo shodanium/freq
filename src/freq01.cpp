@@ -104,9 +104,6 @@ int main(int argc, char **argv) {
 	const size_t effecient_size = 500000;
 	Dict dict(effecient_size);
 
-	std::vector<Dict::value_type *> sorted_list;
-	sorted_list.reserve(effecient_size);
-
 	size_t cnt = 0;
 	Key key;
 	for (size_t i = 0; i < fsz; ++i) {
@@ -126,7 +123,6 @@ int main(int argc, char **argv) {
 		auto it = dict.find(key);
 		if (it == dict.end()) {
 			it = dict.insert(it, {key, 1});
-			sorted_list.emplace_back(&(*it));
 		} else {
 			++(it->second);
 		}
@@ -139,13 +135,17 @@ int main(int argc, char **argv) {
 		auto it = dict.find(key);
 		if (it == dict.end()) {
 			it = dict.insert(it, {key, 1});
-			sorted_list.emplace_back(&(*it));
 		} else {
 			++(it->second);
 		}
 	}
 
 	close(fd);
+
+	std::vector<Dict::value_type *> sorted_list;
+	sorted_list.reserve(dict.size());
+	for (auto &pair : dict)
+		sorted_list.push_back(&pair);
 
 	std::sort(sorted_list.begin(), sorted_list.end(), LessIterator());
 	std::cout << cnt << std::endl;
