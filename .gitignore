@@ -9,3 +9,8 @@ out.txt
 *.vcxproj.user
 .vs
 junk/
+
+
+# linux binaries
+bin/freq*
+bin/hack*
