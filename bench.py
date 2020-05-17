@@ -1,10 +1,12 @@
 import os, subprocess, time
 
 if os.name != 'nt':
-	print("sorry, Windows only for now")
+	print('sorry, Windows only for now')
 	os.exit(0)
 
-def run1(args, prog, RUNS = 10):
+SIZE = os.path.getsize('pg.txt')
+
+def run1(args, prog, RUNS=10):
 	t = []
 	for i in range(RUNS):
 		tm = time.perf_counter()
@@ -12,9 +14,9 @@ def run1(args, prog, RUNS = 10):
 		r.wait()
 		t.append(time.perf_counter() - tm)
 	t = sorted(t)
-	print('%.3f..%.3fs %s' % (t[0], t[-1], prog))
+	print('| %.3f..%.3fs | %.1f | %s |' % (t[0], t[-1], SIZE / t[0] / 1000000, prog))
 
 run1(['./bin/freq01cpp.exe'], 'freq01.cpp')
+run1(['./bin/freq01rs.exe'], 'freq01.rs')
 run1(['./bin/freq01go.exe'], 'freq01.go')
-run1(['./bin/freq01rs.exe'], 'rust/src/main.rs')
-run1(['php', 'freq01.php'], 'freq01.php', RUNS=1)
+run1(['php', 'freq01.php'], 'freq01.php', RUNS=3)
