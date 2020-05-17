@@ -67,7 +67,7 @@ struct HashKey {
 using Dict = std::unordered_map<Key, uint32_t, HashKey>;
 
 struct LessIterator {
-	bool operator()(const Dict::iterator &a, const Dict::iterator &b) {
+	bool operator()(const Dict::value_type *a, const Dict::value_type *b) {
 		if (a->second == b->second) {
 			return a->first.text < b->first.text;
 		}
@@ -101,9 +101,11 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	Dict dict(5000000);
-	std::vector<Dict::iterator> sorted_list;
-	sorted_list.reserve(500000);
+	const size_t effecient_size = 500000;
+	Dict dict(effecient_size);
+
+	std::vector<Dict::value_type *> sorted_list;
+	sorted_list.reserve(effecient_size);
 
 	size_t cnt = 0;
 	Key key;
@@ -123,10 +125,8 @@ int main(int argc, char **argv) {
 		// end of word
 		auto it = dict.find(key);
 		if (it == dict.end()) {
-			// TODO: this could be broken if rehash happens
-			// switch to keeping pointers to std::pair
 			it = dict.insert(it, {key, 1});
-			sorted_list.emplace_back(it);
+			sorted_list.emplace_back(&(*it));
 		} else {
 			++(it->second);
 		}
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 		auto it = dict.find(key);
 		if (it == dict.end()) {
 			it = dict.insert(it, {key, 1});
-			sorted_list.emplace_back(it);
+			sorted_list.emplace_back(&(*it));
 		} else {
 			++(it->second);
 		}
