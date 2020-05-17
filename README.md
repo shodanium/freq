@@ -12,18 +12,19 @@ Benchmark results
 
 **i5-4690 @ 3.7 GHz, Windows 7 x64**
 
-| min..max        | MB/sec    | program          | compiler or runtime |
-|-----------------|-----------|------------------|---------------------|
-| 2.104..2.136s   | 159.8     | freq01.cpp       | vs2019 16.1.0       |
-| 2.655..2.675s   | 126.6     | rust/src/main.rs | rustc 1.43.1        |
-| 4.397..4.512s   | 76.5      | freq01.go        | go 1.14.1           |
-| 30.973..31.318s | 10.9      | freq01.php       | php 7.0.20-zts      |
+| min..max        | MB/s  | program    | compiler or runtime |
+|-----------------|-------|------------|---------------------|
+| 2.104..2.136s   | 159.8 | freq01.cpp | vs2019 16.1.0       |
+| 2.655..2.675s   | 126.6 | freq01.rs  | rustc 1.43.1        |
+| 4.397..4.512s   | 76.5  | freq01.go  | go 1.14.1           |
+| 30.973..31.318s | 10.9  | freq01.php | php 7.0.20-zts      |
 
 C++
 ----
 
 ```bash
 g++ -O3 -o freq01 freq01.cpp
+./freq01 pg.txt out.txt
 ```
 
 Go
@@ -31,6 +32,7 @@ Go
 
 ```bash
 go build freq01.go
+./freq01 pg.txt out.txt
 ```
 
 Rust
@@ -41,5 +43,5 @@ cd rust
 cargo build --release
 
 cd ..
-./rust/target/release/freq pg.txt out.txt
+./rust/target/release/freq01 pg.txt out.txt
 ```

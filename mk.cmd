@@ -9,11 +9,11 @@ cl.exe /permissive- /GS /GL /W3 /Gy /Zc:wchar_t /Gm- /O2 /sdl /Zc:inline /fp:pre
 echo === freq01.go
 call go build -o bin\freq01go.exe freq01.go
 
-echo === main.rs
+echo === freq01.rs
 cd rust
 call cargo build --release --color=never
 cd ..
-move "rust\target\release\freq.exe" "bin\freq01rs.exe"
+move "rust\target\release\freq01.exe" "bin\freq01rs.exe"
 
 echo === all done
 endlocal
