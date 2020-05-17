@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29424.173
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freq", "freq\freq.vcxproj", "{08257B64-948B-42C0-8949-54E6099FF89C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freq01", "msvc2019\freq01.vcxproj", "{08257B64-948B-42C0-8949-54E6099FF89C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

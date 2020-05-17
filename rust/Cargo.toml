@@ -10,3 +10,7 @@ edition = "2018"
 clap = "3.0.0-beta.1"
 fnv = "1"
 regex = "1"
+
+[[bin]]
+name = "freq01"
+path = "../freq01.rs"
