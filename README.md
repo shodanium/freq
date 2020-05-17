@@ -52,11 +52,11 @@ cd ..
 Scala
 -----
 
-1. Go to `scala` subfolder and run `sbt` from it (running in sbt shell mode is much faster):
+1. Go to `build\scala` subfolder and run `sbt` from it (running in sbt shell mode is much faster):
 
    ```bash
-   $> cd scala
-   $> sbt
+   $ cd scala
+   $ sbt
    ```
 
 2. Run from `sbt shell`:

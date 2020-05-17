@@ -11,7 +11,7 @@
 #include <io.h>
 
 extern "C" {
-#include "windows-mmap.h"
+#include "ext/windows-mmap.h"
 };
 
 #define lseek64 _lseeki64

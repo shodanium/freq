@@ -6,7 +6,6 @@ out.txt
 
 # VS2019 stuff
 
-*.user
+*.vcxproj.user
 .vs
-msvc2019/x64
-x64
+junk/
