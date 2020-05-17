@@ -4,18 +4,25 @@
 * text=auto
 
 # These files are text and should be normalized (convert crlf => lf)
-*.c       text
-*.check   text
-*.conf    text
-*.css     text
-*.flags   text
-*.html    text
-*.js      text
-*.policy  text
-*.rs      text
-*.sh      text
-*.txt     text
-*.xml     text
+*.c          text
+*.check      text
+*.conf       text
+*.cpp        text
+*.css        text
+*.flags      text
+*.go         text
+*.html       text
+*.js         text
+*.md         text
+*.policy     text
+*.properties text
+*.rs         text
+*.sbt        text
+*.scala      text
+*.sh         text
+*.toml       text
+*.txt        text
+*.xml        text
 
 # Windows-specific files get windows endings
 *.bat     eol=crlf

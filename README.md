@@ -45,3 +45,19 @@ cargo build --release
 cd ..
 ./rust/target/release/freq01 pg.txt out.txt
 ```
+
+Scala
+-----
+
+1. Go to `scala` subfolder and run `sbt` from it (running in sbt shell mode is much faster):
+
+   ```bash
+   $> cd scala
+   $> sbt
+   ```
+
+2. Run from `sbt shell`:
+
+   ```bash
+   freq(master)> run pg.txt out.txt
+   ```
