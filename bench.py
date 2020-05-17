@@ -1,8 +1,8 @@
-import os, subprocess, time
+import os, subprocess, time, sys
 
 if os.name != 'nt':
 	print('sorry, Windows only for now')
-	os.exit(0)
+	sys.exit(0)
 
 SIZE = os.path.getsize('pg.txt')
 
@@ -16,6 +16,7 @@ def run1(args, prog, RUNS=10):
 	t = sorted(t)
 	print('| %.3f..%.3fs | %.1f | %s |' % (t[0], t[-1], SIZE / t[0] / 1000000, prog))
 
+run1(['./bin/freq02cpp.exe'], 'freq02.cpp')
 run1(['./bin/hack01cpp.exe'], 'hack01.cpp')
 run1(['./bin/freq01cpp.exe'], 'freq01.cpp')
 run1(['./bin/freq01rs.exe'], 'freq01.rs')

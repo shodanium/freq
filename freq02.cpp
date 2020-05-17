@@ -48,6 +48,11 @@ struct Trie {
 	std::array<Trie *, 'z' - 'a' + 1> trielets;
 	uint32_t z = 0;
 
+	Trie() {
+		for (auto &x : trielets)
+			x = nullptr;
+	}
+
 	Trie *step(char c) {
 		auto idx = c - 'a';
 		auto t = trielets[idx];
@@ -99,7 +104,7 @@ struct LessIterator {
 };
 
 int main(int argc, char **argv) {
-	if (argc != 2) {
+	if (argc != 3) {
 		exit(usage(argv[0]));
 	}
 
@@ -196,6 +201,10 @@ int main(int argc, char **argv) {
 	std::sort(words.begin(), words.end(), LessIterator());
 
 	FILE *out = fopen("out.txt", "w");
+	if (!out) {
+		std::cerr << "Can't write file" << argv[2] << std::endl;
+		exit(1);
+	}
 	for (const auto &w : words) {
 		fprintf(out, "%d %s\n", w.trie->z, w.text.c_str());
 	}
