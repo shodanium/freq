@@ -1,0 +1,6 @@
+ColumnLimit: 100
+IndentWidth: 4
+Language: Cpp
+ReflowComments: false
+TabWidth: 4
+UseTab: Always
