@@ -13,6 +13,7 @@
 #else
 #include <sys/mman.h>
 #include <unistd.h>
+#define __forceinline __attribute__((always_inline)) inline
 #endif
 
 typedef unsigned char byte;
@@ -60,6 +61,7 @@ class strhash {
 	const int KEYS_CHUNK = 1024 * 1024;  // no power of 2 restrictions here
 
 	entry *data;
+	int mask = INITIAL_SIZE - 1;
 	int capacity = INITIAL_SIZE;
 	int used = 0;
 	int maxused = int(LOAD_FACTOR * capacity);
@@ -77,7 +79,7 @@ class strhash {
 	}
 
 	// the accessor; creates a new zero value for new keys
-	int &operator[](const char *key);
+	int &acquire(const char *key, uint hash);
 
 	// sorts and dumps; AND LEAVES THE HASH UNUSABLE!
 	void dump(FILE *out);
@@ -87,13 +89,6 @@ class strhash {
 	const char *dup4(const char *key);
 	void grow();
 };
-
-uint myhash(const char *key) {
-	uint h = 2166136261UL;
-	while (uint c = *key++)
-		h = (h ^ c) * 0x1000193;
-	return h;
-}
 
 bool streq4(const char *aa, const char *bb) {
 	const uint *a = (const uint *)aa;
@@ -105,9 +100,7 @@ bool streq4(const char *aa, const char *bb) {
 	return *a == *b;
 }
 
-int &strhash::operator[](const char *key) {
-	uint hash = myhash(key);
-	int mask = capacity - 1;
+__forceinline int &strhash::acquire(const char *key, uint hash) {
 	int i = hash & mask;
 	while (data[i].key) {
 		if (data[i].hash == hash && streq4(data[i].key, key))
@@ -128,7 +121,7 @@ int &strhash::add(int i, uint hash, const char *key) {
 
 	assert(used > maxused);
 	grow();
-	return (*this)[key];
+	return acquire(key, hash);
 }
 
 const char *strhash::dup4(const char *key) {
@@ -149,7 +142,7 @@ const char *strhash::dup4(const char *key) {
 
 void strhash::grow() {
 	entry *newdata = new entry[2 * capacity];
-	int mask = 2 * capacity - 1;
+	mask = 2 * capacity - 1;
 
 	for (int i = 0; i < capacity; i++)
 		if (data[i].key) {
@@ -209,24 +202,28 @@ int main(int argc, char **argv) {
 
 	const byte *rcur = fbegin;
 	const byte *rmax = fbegin + fsz;
+	uint h = 0;
 	while (rcur < rmax) {
 		byte c = lc[*rcur++];
 		if (!c) {
 			if (wcur != wbuf) {
 				*(uint *)wcur = 0;
-				freqs[(char *)wbuf]++;
+				freqs.acquire((char *)wbuf, h)++;
 				wcur = wbuf;
+				h = 0;
 			}
 		} else {
-			if (wcur < wmax)
+			if (wcur < wmax) {
 				*wcur++ = c;
+				h = (h ^ c) * 0x1000193;
+			}
 		}
 	}
 
 	// any last words?
 	if (wcur != wbuf) {
 		*(uint *)wcur = 0;
-		freqs[(char *)wbuf]++;
+		freqs.acquire((char *)wbuf, h)++;
 	}
 
 	freqs.dump(fp2);
