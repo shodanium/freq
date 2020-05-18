@@ -13,4 +13,4 @@ regex = "1"
 
 [[bin]]
 name = "freq01"
-path = "../freq01.rs"
+path = "../../src/freq01.rs"
