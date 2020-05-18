@@ -36,7 +36,7 @@ extern "C" {
 static constexpr uint64_t offset_basis = 14695981039346656037LU;
 static constexpr uint64_t prime = 1099511628211;
 
-inline uint64_t update_hash(uint64_t h, char ch) { return (uint64_t(h) * prime) ^ ch; }
+inline uint64_t update_hash(uint64_t h, char ch) { return (uint64_t(h) ^ ch) * prime; }
 
 int usage(char *process_name) {
 	std::cout << "Usage: " << process_name << " <filename>" << std::endl;
@@ -62,12 +62,33 @@ using Dict = ska::flat_hash_map<uint64_t, DictValue,
 								HashKey>; //works with std::unordered_map as well, and still faster
 //using Dict = std::unordered_map<uint64_t, DictValue, HashKey>;
 
-const std::vector<std::string> *strings = nullptr;
+const uint8_t *all_data = nullptr, *end_data = nullptr;
+const char *all_letters = nullptr;
+
+static void lower_to(const uint8_t *data, const uint8_t *end_data, const char *letters, char *buf)
+{
+  for(;data != end_data;++data, ++buf){
+    *buf = letters[*data];
+    if (!*buf)
+      return;
+  }
+}
+
+static bool compare_insensitive(const uint8_t *a, const uint8_t *b)
+{
+  for(const uint8_t *ab = a<b ? b : a; ab != end_data;++a,++b){
+    char chA = all_letters[*a], chB = all_letters[*b];
+    if (chA == chB)
+      continue;
+    return chA < chB;
+  }
+  return a>b;
+}
 
 struct IndicesIterator {
 	bool operator()(const DictValue &a, const DictValue &b) {
 		if (a.second == b.second) {
-			return (*strings)[a.first] < (*strings)[b.first];
+			return compare_insensitive(all_data+a.first, all_data+b.first);
 		}
 
 		return a.second > b.second;
@@ -88,7 +109,7 @@ int main(int argc, char **argv) {
 
 	const uint8_t *begin = reinterpret_cast<const uint8_t *>(
 		mmap(NULL, fsz, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0));
-
+	const uint8_t *cbegin = begin;
 	char letters[256];
 	for (size_t i = 0; i < 256; ++i) {
 		letters[i] = letterize(i);
@@ -100,21 +121,16 @@ int main(int argc, char **argv) {
 	}
 
 	Dict dict(500000);
-	std::vector<std::string> all_strings;
-	all_strings.reserve(500000);
 
-	char buf[256];
 	size_t clen = 0;
 
-	size_t cnt = 0;
-	uint32_t count = 0;
 	uint64_t key_hash = offset_basis;
 	for (auto end = begin + fsz; begin != end; ++begin) {
 		const auto ch = letters[*begin];
 
 		if (ch) {
 			key_hash = update_hash(key_hash, ch);
-			buf[clen++] = ch;
+			clen++;
 			continue;
 		}
 
@@ -126,41 +142,33 @@ int main(int argc, char **argv) {
 		// end of word
 		auto it = dict.find(key_hash);
 		if (it == dict.end()) {
-			dict.insert(it, {key_hash, DictValue(count, 1)});
-			buf[clen] = 0;
-			all_strings.push_back(buf);
-			++count;
+			dict.insert(it, {key_hash, DictValue(uint32_t(begin-cbegin-clen), 1)});
 		} else {
 			++(it->second.second);
 		}
-		++cnt;
 		key_hash = offset_basis;
-		buf[clen = 0] = 0;
+		clen=0;
 	}
-	std::cout << cnt << std::endl;
-	std::cout << count << std::endl;
 
 	// last word
 	if (key_hash != offset_basis) {
 		auto it = dict.find(key_hash);
 		if (it == dict.end()) {
-			dict.insert(it, {key_hash, DictValue(count, 1)});
-			buf[clen] = 0;
-			all_strings.push_back(buf);
-			++count;
+			dict.insert(it, {key_hash, DictValue(uint32_t(begin-cbegin-clen), 1)});
 		} else {
 			++(it->second.second);
 		}
 	}
-	close(fd);
 
 	std::vector<DictValue> freqs;
-	freqs.resize(count);
+	freqs.resize(dict.size());
 	uint32_t fi = 0;
 	for (auto &d : dict)
 		freqs[fi++] = d.second;
 
-	strings = &all_strings;
+	all_data = cbegin;
+	end_data = begin;
+	all_letters = letters;
 	std::sort(freqs.begin(), freqs.end(), IndicesIterator()); //we can instead sort indices, ofc
 
 	FILE *out = fopen(argv[2], "w");
@@ -168,9 +176,12 @@ int main(int argc, char **argv) {
 		std::cerr << "Can't write file" << argv[2] << std::endl;
 		exit(1);
 	}
+    char buf[256];
 	for (auto i : freqs) {
-		fprintf(out, "%d %s\n", i.second, all_strings[i.first].c_str());
+	    lower_to(cbegin + i.first, end_data, letters, buf);
+		fprintf(out, "%d %s\n", i.second, buf);
 	}
 	fclose(out);
+	close(fd);
 	return 0;
 }
