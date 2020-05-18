@@ -8,10 +8,11 @@ EXE = '.exe' if os.name == 'nt' else ''
 def run1(args, src_name, num_runs):
 	t = []
 	for i in range(num_runs):
-		tm = time.perf_counter()
+	    
+		tm = time.perf_counterperf_counter() if sys.version_info[0] == 3 else time.clock()
 		r = subprocess.Popen(args + ['pg.txt', 'out.txt'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		r.wait()
-		t.append(time.perf_counter() - tm)
+		t.append((time.perf_counter() if sys.version_info[0] == 3 else time.clock()) - tm)
 	t = sorted(t)
 	print('| %.3f..%.3fs | %.1f | %s |' % (t[0], t[-1], SIZE / t[0] / 1000000, src_name))
 
