@@ -56,25 +56,20 @@ Rust
 -----
 
 ```bash
-cd rust
+cd build/rust
 cargo build --release
 
-cd ..
-./rust/target/release/freq01 pg.txt out.txt
+cd ../..
+./junk/freq01rust pg.txt out.txt
 ```
 
 Scala
 -----
 
-1. Go to `build\scala` subfolder and run `sbt` from it (running in sbt shell mode is much faster):
+```bash
+cd build/scala
+sbt assembly
+cd ../..
+java -jar ./junk/freq01scala.jar pg.txt out.txt
+```
 
-   ```bash
-   $ cd scala
-   $ sbt
-   ```
-
-2. Run from `sbt shell`:
-
-   ```bash
-   freq(master)> run pg.txt out.txt
-   ```
