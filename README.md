@@ -14,6 +14,7 @@ Benchmark results
 
 | min..max        | MB/s  | program    | compiler or runtime |
 |-----------------|-------|------------|---------------------|
+| 1.481..1.501s   | 227.0 | freq03.cpp | vs2019 16.1.0       |
 | 1.747..1.778s   | 192.5 | freq02.cpp | vs2019 16.1.0       |
 | 2.462..2.491s   | 136.6 | freq01.cpp | vs2019 16.1.0       |
 | 2.655..2.675s   | 126.6 | freq01.rs  | rustc 1.43.1        |
@@ -26,6 +27,7 @@ Benchmark results
 
 | min..max        | MB/s  | program    | compiler or runtime |
 |-----------------|-------|------------|---------------------|
+| 1.443..1.457s   | 232.9 | freq03.cpp | gcc 6.3.0           |
 | 1.492..1.521s   | 225.4 | freq02.cpp | gcc 6.3.0           |
 | 2.197..2.245s   | 153.0 | freq01.rs  | rustc 1.43.1        |
 | 2.480..2.737s   | 135.5 | freq01.cpp | gcc 6.3.0           |

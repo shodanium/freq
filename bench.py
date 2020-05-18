@@ -16,6 +16,7 @@ def run1(args, src_name, num_runs):
 	print('| %.3f..%.3fs | %.1f | %s |' % (t[0], t[-1], SIZE / t[0] / 1000000, src_name))
 
 runs = [
+	[['./bin/freq03cpp' + EXE], 'freq03.cpp'],
 	[['./bin/freq02cpp' + EXE], 'freq02.cpp'],
 	[['./bin/freq01cpp' + EXE], 'freq01.cpp'],
 	[['./bin/freq01rs' + EXE], 'freq01.rs'],
