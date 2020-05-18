@@ -1,2 +1,0 @@
-#!/bin/sh
-exec java -jar $(pwd)/junk/freq01scala.jar "$@"

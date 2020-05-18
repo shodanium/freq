@@ -28,6 +28,8 @@ move "junk\rust\release\freq01.exe" "bin\freq01rs.exe"
 echo === freq01.scala
 cd build\scala
 call sbt assembly
+cd ..\..
+move "junk\freq01scala.jar" "bin\freq01scala.jar"
 
 echo === all done
 endlocal

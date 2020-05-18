@@ -16,6 +16,7 @@ def run1(args, src_name, num_runs):
 	print('| %.3f..%.3fs | %.1f | %s |' % (t[0], t[-1], SIZE / t[0] / 1000000, src_name))
 
 runs = [
+	[['java', '-jar', './bin/freq01scala.jar'], 'freq01.scala', 3],
 	[['python', './src/freq01.py'], 'freq01.py', 3],
 	[['./bin/freq03cpp' + EXE], 'freq03.cpp'],
 	[['./bin/freq02cpp' + EXE], 'freq02.cpp'],
