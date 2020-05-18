@@ -1,3 +1,5 @@
+import sbtassembly.AssemblyPlugin.defaultUniversalScript
+
 addCommandAlias("fix", "all compile:scalafix test:scalafix")
 addCommandAlias("lint", "compile:scalafix --check ; test:scalafix --check")
 
@@ -51,6 +53,7 @@ inThisBuild(
       "-Ywarn-unused:privates", // Warn if a private member is unused.
       "-Ywarn-value-discard", // Warn when non-Unit expression results are unused.
     ),
+    test in assembly := {},
     turbo := true,
     updateOptions := updateOptions.value
       .withCachedResolution(true)
@@ -60,5 +63,12 @@ inThisBuild(
 lazy val freq: Project = Project(id = "freq", base = file("."))
   .enablePlugins(GitBranchPrompt)
   .settings(
-    libraryDependencies ++= Dependencies.harmony.value,
+    Compile / scalaSource := baseDirectory.value / "../../src",
+    Compile / javaSource := baseDirectory.value / "../../src",
+    assemblyOutputPath in assembly := baseDirectory.value / "../../junk/freq01scala.jar",
+    mainClass in assembly := Some("freq01.App"),
+    target := baseDirectory.value / "../../junk/scala",
+    cleanFiles += baseDirectory.value / "../../junk/scala",
+    cleanFiles += baseDirectory.value / "../../junk/freq01scala.jar",
+    libraryDependencies ++= Dependencies.freq.value,
   )

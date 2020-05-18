@@ -14,7 +14,7 @@ object Dependencies {
     val SemanticDbScalac = "4.3.0"
   }
 
-  val harmony = Def.setting(
+  val freq = Def.setting(
     Seq(
       "it.unimi.dsi"  % "fastutil"        % Version.Fastutil,
       "co.fs2"        %% "fs2-core"       % Version.Fs2,

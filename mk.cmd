@@ -25,5 +25,9 @@ call cargo build --release --color=never
 cd ..\..
 move "junk\rust\release\freq01.exe" "bin\freq01rs.exe"
 
+echo === freq01.scala
+cd build\scala
+call sbt assembly
+
 echo === all done
 endlocal

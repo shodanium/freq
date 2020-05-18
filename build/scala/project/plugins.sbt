@@ -1,5 +1,8 @@
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
 
+// SBT Assembly
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.10")
+
 // SBT Git
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
