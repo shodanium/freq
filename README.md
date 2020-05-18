@@ -1,11 +1,70 @@
 Simple frequency dict benchmarks
 =================================
 
+Or, "a million ways to skin a corpus".
+
 Here there be descriptions and test results. Eventually.
 
 In the meantime, here's a cookie, and a test file: https://yadi.sk/d/xTFWy38y3GBAgS
 
 pg.txt, 336 183 276 bytes, MD5 9ca4282866bb919e03cca2ed2b6ce429
+
+What
+-----
+
+Briefly, the task is as follows. Write a program that
+
+ * takes exactly 2 command line arguments, `myprog in.txt out.txt`
+ * counts all unique input words, and print them in `freq desc, word asc` order
+ * words are `[a-zA-Z]{1,256}`, ie. latin letters only, and should be lowercased
+ * input can contain arbitrary bytes, assume **nothing** about encoding, zeroes, etc
+ * input might not fit in RAM, output however must fit in RAM
+ * single-threaded only, for simplicity etc
+
+And here's more crazy.
+
+ * assume (for now) that 32 bits is enough for frequencies, ie. that all freqs
+   are under 4e9
+ * assume that any 64 bit hash function will **easily** collide, and that any
+   128 bit hash function **might** actually collide, either "by random luck"
+   or by malicious attack
+
+Last but not least, have a tiny example.
+
+`in.txt`:
+```
+The time has come, the Walrus said,
+to talk of many things
+```
+
+`out.txt`:
+```
+2 the
+1 come
+1 has
+1 many
+1 of
+1 said
+1 talk
+1 things
+1 time
+1 to
+1 walrus
+```
+
+Why
+----
+
+This is a community project with the only ultimate goal: **to explore**.
+
+ * to explore different programming languages and syntaxes
+ * to explore "typical" and idiomatic solutions
+ * to explore elegant and concise solutions
+ * to explore algorithms and programming techniques
+ * to explore performance and optimization tricks
+
+That, and to have some fun fiddling with a simple quick task in a myriad
+different ways.
 
 Benchmark results
 ------------------
