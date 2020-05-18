@@ -35,7 +35,7 @@ def write_words(output_file: str, word_frequency: Dict[int, List[str]]) -> None:
     with open(output_file, 'w') as output:
         for count in sorted(word_frequency.keys(), reverse=True):
             for word in sorted(word_frequency[count]):
-                output.write(output.write(str(count) + ' ' + word + '\n')
+                output.write(output.write(str(count) + ' ' + word + '\n'))
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
