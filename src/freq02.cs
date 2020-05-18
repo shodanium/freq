@@ -47,7 +47,7 @@ namespace freq02
         private static readonly trie _trie = new trie();
         private static void Count(string filename)
         {
-            var text = File.ReadAllText(filename);
+            var text = File.ReadAllBytes(filename);
 
             trie.node node = _trie.Root;
             foreach (var ch in text)
