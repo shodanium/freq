@@ -57,7 +57,7 @@ if __name__ == '__main__':
     output_file = sys.argv[2]
 
     with open(input_file, 'rb') as f:
-        counter = Counter(bwords(f, chunk_size=100, max_bword_len=256))
+        counter = Counter(bwords(f, chunk_size=1024*1024, max_bword_len=256))
     with open(output_file, 'w') as f:
         results = defaultdict(list)
         for word, count in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0])):
