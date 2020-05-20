@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,57 +8,16 @@ namespace freq01
 {
     class freq01
     {
-        private static readonly Dictionary<string, int> dict = new Dictionary<string, int>(500000);
+        private static readonly Dictionary<string, int> dict = new Dictionary<string, int>();
 
-        private static void Count(string filename)
+        private static void AddWord(StringBuilder word)
         {
-            var text = File.ReadAllText(filename);
+            var strWord = word.ToString().ToLowerInvariant();
 
-            var word = new StringBuilder(16);
-            var strWord = "";
-
-            foreach (var ch in text)
-            {
-                if (ch >= 'a' && ch <= 'z')
-                {
-                    word.Append(ch);
-                    continue;
-                }
-
-                if (ch >= 'A' && ch <= 'Z')
-                {
-                    word.Append((char)(ch + 32));
-                    continue;
-                }
-
-                if (word.Length == 0)
-                    continue;
-
-                strWord = word.ToString();
-
-                if (dict.ContainsKey(strWord))
-                    dict[strWord]++;
-                else
-                    dict[strWord] = 1;
-
-                word = new StringBuilder(16);
-            }
-
-            if (word.Length > 0)
-            {
-                strWord = word.ToString();
-
-                if (dict.ContainsKey(strWord))
-                    dict[strWord]++;
-                else
-                    dict[strWord] = 1;
-            }
-        }
-
-        private static void SortAndDump(string filename)
-        {
-            var sorted = dict.OrderByDescending(kvp => kvp.Value).ThenBy(kvp => kvp.Key);
-            File.WriteAllLines(filename, sorted.Select(kvp => $"{kvp.Value} {kvp.Key}"));
+            if (dict.ContainsKey(strWord))
+                dict[strWord]++;
+            else
+                dict[strWord] = 1;
         }
 
         static void Main(string[] args)
@@ -70,14 +28,32 @@ namespace freq01
                 return;
             }
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            using (StreamReader sr = new StreamReader(args[0]))
+            {
+                var word = new StringBuilder();
+                while (sr.Peek() >= 0)
+                {
+                    var ch = (char)sr.Read();
+                    if (Char.IsLetter(ch))
+                    {
+                        word.Append(ch);
+                        continue;
+                    }
 
-            Count(args[0]);
-            SortAndDump(args[1]);
+                    if (word.Length == 0)
+                        continue;
 
-            stopwatch.Stop();
-            Console.WriteLine($"Elapsed time: {stopwatch.ElapsedMilliseconds/1000}s");
+                    AddWord(word);
+                    word = new StringBuilder();
+                }
+
+                if (word.Length > 0)
+                    AddWord(word);
+            }
+
+            File.WriteAllLines(args[1], dict.OrderByDescending(kvp => kvp.Value)
+                                                    .ThenBy(kvp => kvp.Key)
+                                                    .Select(kvp => $"{kvp.Value} {kvp.Key}"));
         }
     }
 }

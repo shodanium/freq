@@ -126,30 +126,12 @@ namespace freq05
                 return;
             }
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             var text = File.ReadAllBytes(args[0]);
             var acc = new Accountant();
-            var readMs = stopwatch.ElapsedMilliseconds;
 
             GC.TryStartNoGCRegion(244 * 1000 * 1000, true);
-
             acc.Count(text);
-            var countMs = stopwatch.ElapsedMilliseconds;
-
             SortAndDump(acc, args[1]);
-
-            stopwatch.Stop();
-
-            Console.WriteLine($"Read/prealloc time: {(decimal)readMs / 1000}s");
-            Console.WriteLine($"Count time: {(decimal)(countMs - readMs) / 1000}s");
-            Console.WriteLine($"Sort and dump time: {(decimal)(stopwatch.ElapsedMilliseconds - countMs - readMs) / 1000}s");
-            Console.WriteLine($"Total time: {(decimal)stopwatch.ElapsedMilliseconds / 1000}s");
-
-
-            Console.WriteLine($"\n{acc._nextFreeChunkIndex} used nodes");
-            //GC.EndNoGCRegion();
         }
     }
 }
