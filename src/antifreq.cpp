@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 			
 			if (dict[word])
 			{
-				dict[word]++;
+				++dict[word];
 			}
 			else
 			{
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 		}				
 	}
 
-	for (unordered_map<string, int> ::iterator it = dict.begin(); it != dict.end(); it++)
+	for (unordered_map<string, int> ::iterator it = dict.begin(); it != dict.end(); ++it)
 	{
 		sortedList.push_back(make_pair(it->first, it->second));
 	}
