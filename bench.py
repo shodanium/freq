@@ -18,6 +18,7 @@ def run1(args, src_name, num_runs):
 runs = [
 	[['java', '-jar', './bin/freq01scala.jar'], 'freq01.scala', 3],
 	[['python', './src/freq01.py'], 'freq01.py', 3],
+	[['python', './src/freq02.py'], 'freq02.py', 3],
 	[['./bin/freq03cpp' + EXE], 'freq03.cpp'],
 	[['./bin/freq02cpp' + EXE], 'freq02.cpp'],
 	[['./bin/freq01cpp' + EXE], 'freq01.cpp'],
