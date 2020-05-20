@@ -6,8 +6,6 @@
 
 using namespace std;
 
-#pragma warning (disable : 4996)
-
 bool SortByVal(const pair<string, int> &a, const pair<string, int> &b)
 {
 	if (a.second == b.second)
