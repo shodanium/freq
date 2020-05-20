@@ -7,7 +7,9 @@ use std::{
 use clap::Clap;
 use memmap::*;
 
-const H: usize = 2_166_136_261;
+/// FNV1 hash basis
+const H: usize = 0x811c_9dc5;
+/// FNV1 hash prime
 const P: usize = 0x0100_0193;
 
 /// Counts number of unique `[a-zA-Z]+` words in input.
@@ -24,22 +26,26 @@ fn main() {
     let opts: Opts = Opts::parse();
     let input = open_mmap(&opts);
 
-    let mut word = Vec::with_capacity(256);
     let mut hash = H;
     let mut dict = FrequencyHashMap::new();
 
-    for &byte in input.iter() {
+    let mut word_start = 0;
+    let mut word_end = 0;
+    for (idx, &byte) in input.iter().enumerate() {
         if (b'a' <= byte && byte <= b'z') || (b'A' <= byte && byte <= b'Z') {
-            hash = (hash ^ (byte | 0x20) as usize) * P;
-            word.push(byte);
-        } else if !word.is_empty() {
-            dict.register(hash, &word);
-            word.clear();
-            hash = H;
+            hash ^= (byte & 0x1F) as usize;
+            hash *= P;
+            word_end = idx + 1;
+        } else {
+            if word_start < word_end {
+                dict.register(hash, &input[word_start..word_end]);
+                hash = H;
+            }
+            word_start = idx + 1;
         }
     }
-    if !word.is_empty() {
-        dict.register(hash, &word);
+    if word_start < word_end {
+        dict.register(hash, &input[word_start..word_end]);
     }
 
     let mut output = create_output(&opts);
@@ -67,7 +73,7 @@ struct FrequencyHashEntry {
 }
 
 struct FrequencyHashIntoIter {
-    iter: std::vec::IntoIter<Option<FrequencyHashEntry>>
+    iter: std::vec::IntoIter<Option<FrequencyHashEntry>>,
 }
 
 impl FrequencyHashMap {
@@ -89,7 +95,7 @@ impl FrequencyHashMap {
         loop {
             match unsafe { self.buckets.get_unchecked_mut(index) } {
                 Some(entry) => {
-                    if entry.hash == hash && entry.key.eq_ignore_ascii_case(word) {
+                    if entry.same_as(hash, word) {
                         entry.value += 1;
                         return;
                     } else {
@@ -97,11 +103,7 @@ impl FrequencyHashMap {
                     }
                 }
                 none => {
-                    none.replace(FrequencyHashEntry {
-                        key: word.to_ascii_lowercase().into_boxed_slice(),
-                        value: 1,
-                        hash,
-                    });
+                    none.replace(FrequencyHashEntry::new(hash, word));
 
                     self.length += 1;
                     if self.length > self.max {
@@ -147,8 +149,26 @@ impl IntoIterator for FrequencyHashMap {
         buckets.sort_unstable();
 
         FrequencyHashIntoIter {
-            iter: buckets.into_iter()
+            iter: buckets.into_iter(),
         }
+    }
+}
+
+impl FrequencyHashEntry {
+    #[inline]
+    fn new(hash: usize, word: &[u8]) -> FrequencyHashEntry {
+        FrequencyHashEntry {
+            key: word.iter().map(|b| b | 0x20).collect(),
+            hash,
+            value: 1,
+        }
+    }
+
+    #[inline]
+    fn same_as(&self, hash: usize, word: &[u8]) -> bool {
+        hash == self.hash
+            && self.key.len() == word.len()
+            && Iterator::zip(self.key.iter(), word.iter()).all(|(&l, &r)| l == (r | 0x20))
     }
 }
 
