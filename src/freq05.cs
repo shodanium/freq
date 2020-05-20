@@ -20,7 +20,7 @@ namespace freq05
 
         private node _root = new node();
         private readonly char[] _enumerationWordBuf = new char[256];
-        private readonly char[] _charmap = { 'a', 'b', 'c', 'd', 'e', 'f', 'j', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+        private readonly char[] _charmap = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
         private node[] _sparseNodes = new node[CAPACITY];
         public int _nextFreeChunkIndex = 26;
