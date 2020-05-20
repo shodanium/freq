@@ -1,9 +1,16 @@
-use clap::Clap;
-use fnv::FnvHashMap;
 use std::{
+    cmp::Ordering,
     fs::File,
-    io::{BufRead, BufReader, BufWriter, Write},
+    io::{BufWriter, Read, Write},
 };
+
+use clap::Clap;
+use memmap::*;
+
+/// FNV1 hash basis
+const H: usize = 0x811c_9dc5;
+/// FNV1 hash prime
+const P: usize = 0x0100_0193;
 
 /// Counts number of unique `[a-zA-Z]+` words in input.
 #[derive(Clap, Debug)]
@@ -15,44 +22,34 @@ struct Opts {
     output: Option<String>,
 }
 
-struct FreqDict {
-    dict: FnvHashMap<Box<[u8]>, u32>,
-}
-
 fn main() {
     let opts: Opts = Opts::parse();
-    let mut input = open_input(&opts);
-    let mut output = create_output(&opts);
+    let input = open_mmap(&opts);
 
-    let mut word = Vec::with_capacity(16);
-    let mut dict = FreqDict::new();
+    let mut hash = H;
+    let mut dict = FrequencyHashMap::new();
 
-    let mut buffer = [0u8; 16 * 1024];
-    loop {
-        let read_count = input
-            .read(&mut buffer)
-            .unwrap_or_else(|e| panic!("Unable to read bytes from '{}': {}", opts.input, e));
-
-        if read_count == 0 {
-            break;
-        }
-
-        for &byte in buffer.iter().take(read_count) {
-            if b'a' <= byte && byte <= b'z' {
-                word.push(byte);
-                continue;
-            } else if b'A' <= byte && byte <= b'Z' {
-                word.push(byte ^ 0x20);
-                continue;
+    let mut word_start = 0;
+    let mut word_end = 0;
+    for (idx, &byte) in input.iter().enumerate() {
+        if (b'a' <= byte && byte <= b'z') || (b'A' <= byte && byte <= b'Z') {
+            hash ^= (byte & 0x1F) as usize;
+            hash *= P;
+            word_end = idx + 1;
+        } else {
+            if word_start < word_end {
+                dict.register(hash, &input[word_start..word_end]);
+                hash = H;
             }
-
-            dict.add_word(&word);
-            word.clear();
+            word_start = idx + 1;
         }
     }
-    dict.add_word(&word);
+    if word_start < word_end {
+        dict.register(hash, &input[word_start..word_end]);
+    }
 
-    for (count, word) in dict.get_freq() {
+    let mut output = create_output(&opts);
+    for (count, word) in dict.into_iter() {
         writeln!(&mut output, "{} {}", count, word).unwrap_or_else(|e| {
             let output = opts.output.as_ref().map_or("-", |s| s.as_str());
             panic!("Unable to write results in '{}': {}", output, e)
@@ -60,44 +57,184 @@ fn main() {
     }
 }
 
-impl FreqDict {
-    fn new() -> Self {
-        FreqDict {
-            dict: FnvHashMap::default(),
+struct FrequencyHashMap {
+    buckets: Vec<Option<FrequencyHashEntry>>,
+    capacity: usize,
+    length: usize,
+    mask: usize,
+    max: usize,
+}
+
+#[derive(Clone, Debug)]
+struct FrequencyHashEntry {
+    key: Box<[u8]>,
+    value: usize,
+    hash: usize,
+}
+
+struct FrequencyHashIntoIter {
+    iter: std::vec::IntoIter<Option<FrequencyHashEntry>>,
+}
+
+impl FrequencyHashMap {
+    const INITIAL: usize = 128;
+    const LOAD_FACTOR: f32 = 0.9;
+
+    fn new() -> FrequencyHashMap {
+        FrequencyHashMap {
+            buckets: vec![None; Self::INITIAL],
+            capacity: Self::INITIAL,
+            length: 0,
+            mask: Self::INITIAL - 1,
+            max: (Self::LOAD_FACTOR * Self::INITIAL as f32) as usize,
         }
     }
 
-    fn add_word(&mut self, word: &[u8]) {
-        if !word.is_empty() {
-            if let Some(counter) = self.dict.get_mut(word) {
-                *counter += 1;
-            } else {
-                self.dict.insert(word.into(), 1);
+    fn register(&mut self, hash: usize, word: &[u8]) {
+        let mut index = hash & self.mask;
+        loop {
+            match unsafe { self.buckets.get_unchecked_mut(index) } {
+                Some(entry) => {
+                    if entry.same_as(hash, word) {
+                        entry.value += 1;
+                        return;
+                    } else {
+                        index = (index + 1) & self.mask
+                    }
+                }
+                none => {
+                    none.replace(FrequencyHashEntry::new(hash, word));
+
+                    self.length += 1;
+                    if self.length > self.max {
+                        self.ensure_capacity();
+                    }
+                    break;
+                }
             }
         }
     }
 
-    fn get_freq(&self) -> Vec<(u32, &str)> {
-        let mut freq = self.dict.iter()
-            .map(|(w, c)| {
-                let key = std::str::from_utf8(w).unwrap();
-                (*c, key)
-            })
-            .collect::<Vec<_>>();
-        freq.sort_unstable_by(|(c1, w1), (c2, w2)| {
-            Ord::cmp(c1, c2).reverse().then_with(|| Ord::cmp(w1, w2))
-        });
-        freq
+    fn ensure_capacity(&mut self) {
+        while self.length > self.max {
+            self.capacity *= 2;
+            self.mask = self.capacity - 1;
+            self.max = (Self::LOAD_FACTOR * self.capacity as f32) as usize;
+        }
+
+        let new_buckets = vec![None; self.capacity];
+        for bucket in std::mem::replace(&mut self.buckets, new_buckets) {
+            if let Some(entry) = bucket {
+                let mut index = entry.hash & self.mask;
+                loop {
+                    match unsafe { self.buckets.get_unchecked_mut(index) } {
+                        Some(_) => index = (index + 1) & self.mask,
+                        none => {
+                            none.replace(entry);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-fn open_input(opts: &Opts) -> Box<dyn BufRead> {
+impl IntoIterator for FrequencyHashMap {
+    type Item = (usize, String);
+    type IntoIter = FrequencyHashIntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut buckets = self.buckets;
+        buckets.sort_unstable();
+
+        FrequencyHashIntoIter {
+            iter: buckets.into_iter(),
+        }
+    }
+}
+
+impl FrequencyHashEntry {
+    #[inline]
+    fn new(hash: usize, word: &[u8]) -> FrequencyHashEntry {
+        FrequencyHashEntry {
+            key: word.iter().map(|b| b | 0x20).collect(),
+            hash,
+            value: 1,
+        }
+    }
+
+    #[inline]
+    fn same_as(&self, hash: usize, word: &[u8]) -> bool {
+        hash == self.hash
+            && self.key.len() == word.len()
+            && Iterator::zip(self.key.iter(), word.iter()).all(|(&l, &r)| l == (r | 0x20))
+    }
+}
+
+impl Ord for FrequencyHashEntry {
+    fn cmp(&self, other: &Self) -> Ordering {
+        Ord::cmp(&other.value, &self.value)
+            .then_with(|| Ord::cmp(self.key.as_ref(), other.key.as_ref()))
+    }
+}
+
+impl PartialOrd for FrequencyHashEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(Ord::cmp(&self, &other))
+    }
+}
+
+impl Eq for FrequencyHashEntry {}
+
+impl PartialEq for FrequencyHashEntry {
+    fn eq(&self, other: &Self) -> bool {
+        Ord::cmp(&self, &other) == Ordering::Equal
+    }
+}
+
+impl Iterator for FrequencyHashIntoIter {
+    type Item = (usize, String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(opt) = self.iter.next() {
+            if let Some(entry) = opt {
+                let key = std::str::from_utf8(&entry.key).unwrap().to_owned();
+                return Some((entry.value, key));
+            }
+        }
+        None
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let (_, upper) = self.iter.size_hint();
+        (0, upper)
+    }
+}
+
+fn open_mmap(opts: &Opts) -> Mmap {
     match opts.input.as_str() {
-        "-" => Box::new(BufReader::new(std::io::stdin())),
+        "-" => {
+            let mut buffer = vec![];
+            std::io::stdin()
+                .read_to_end(&mut buffer)
+                .unwrap_or_else(|e| panic!("Unable to read STDIN: {}", e));
+            let mut mmap = MmapOptions::new()
+                .len(buffer.len())
+                .map_anon()
+                .unwrap_or_else(|e| panic!("Unable to read STDIN: {}", e));
+            mmap.copy_from_slice(&buffer);
+            mmap.make_read_only()
+                .unwrap_or_else(|e| panic!("Unable to read STDIN: {}", e))
+        }
         fnm => {
             let file = File::open(fnm)
                 .unwrap_or_else(|e| panic!("Unable to open '{}' for reading: {}", fnm, e));
-            Box::new(BufReader::new(file))
+            unsafe {
+                MmapOptions::new()
+                    .map(&file)
+                    .unwrap_or_else(|e| panic!("Unable to read '{}' in memory: {}", fnm, e))
+            }
         }
     }
 }
