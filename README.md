@@ -115,6 +115,14 @@ go build freq01.go
 ./freq01 pg.txt out.txt
 ```
 
+Java
+----
+
+```bash
+javac -d junk src/freq01.java
+java -cp junk freq01 pg.txt out.txt
+```
+
 Rust
 -----
 
