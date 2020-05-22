@@ -19,6 +19,9 @@ cl.exe /permissive- /GS /GL /W3 /Gy /Zc:wchar_t /Gm- /O2 /sdl /Zc:inline /fp:pre
 echo === freq01.go
 call go build -o bin\freq01go.exe src\freq01.go
 
+echo === freq01.java
+call javac -d bin\ src\freq01.java
+
 echo === freq01.rs
 cd build\rust
 call cargo build --release --color=never
