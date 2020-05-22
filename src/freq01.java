@@ -1,68 +1,59 @@
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.io.*;
+import java.util.HashMap;
 
 class freq01 {
-  final static byte UPPER_A = (byte) 'A';
-  final static byte UPPER_Z = (byte) 'Z';
-  final static byte LOWER_A = (byte) 'a';
-  final static byte LOWER_Z = (byte) 'z';
+    final static char[] ALPHABET = new char[256];
 
-  public static void main(String[] args) throws Exception {
-    if (args.length < 2) {
-      System.out.println("Usage: java -cp . Main in.txt out.txt");
-      System.exit(1);
-    }
-
-    HashMap<String, Integer> dict = new HashMap<>(256);
-    try (FileChannel channel = new FileInputStream(args[0]).getChannel()) {
-      MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_ONLY, 0L, channel.size());
-
-      byte[] word = new byte[256];
-      int wordLength = 0;
-      while (map.remaining() > 0) {
-        byte b = map.get();
-        if (LOWER_A <= b && b <= LOWER_Z) {
-          word[wordLength] = b;
-          wordLength += 1;
-        } else if (UPPER_A <= b && b <= UPPER_Z) {
-          word[wordLength]  = (byte) (b | 0x20);
-          wordLength += 1;
-        } else if (wordLength > 0) {
-          String key = new String(Arrays.copyOf(word, wordLength), StandardCharsets.UTF_8);
-          wordLength = 0;
-          dict.merge(key, 1, Integer::sum);
+    static {
+        for (char c = 'a'; c <= 'z'; c++) {
+            ALPHABET[c & 0xFF] = c;
+            ALPHABET[c ^ 0x20] = c;
         }
-      }
-      if (wordLength > 0) {
-        String key = new String(Arrays.copyOf(word, wordLength), StandardCharsets.UTF_8);
-        dict.merge(key, 1, Integer::sum);
-      }
     }
 
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(args[1]))) {
-      dict
-        .entrySet()
-        .stream()
-        .sorted((l, r) -> {
-          int result = r.getValue().compareTo(l.getValue());
-          if (result == 0) result = l.getKey().compareTo(r.getKey());
-          return result;
-        })
-        .forEachOrdered((e) -> {
-          try {
-            writer.write(e.getValue().toString() + " " + e.getKey());
-            writer.newLine();
-          } catch (IOException ioException) {
-            ioException.printStackTrace();
+    public static void main(String[] args) throws Exception {
+        if (args.length < 2) {
+            System.out.println("Usage: java -cp . freq01 in.txt out.txt");
             System.exit(1);
-          }
-        });
+        }
+
+        final HashMap<String, Integer> dict = new HashMap<>(256);
+        final StringBuilder word = new StringBuilder(256);
+        final byte[] buffer = new byte[16 * 1024];
+        try (final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(args[0]))) {
+            for (int read = bis.read(buffer); read > 0; read = bis.read(buffer)) {
+                for (int i = 0; i < read; i++) {
+                    char c = ALPHABET[buffer[i] & 0xFF];
+                    if (c != 0) {
+                        word.append(c);
+                    } else if (word.length() > 0) {
+                        dict.merge(word.toString(), 1, Integer::sum);
+                        word.setLength(0);
+                    }
+                }
+            }
+            if (word.length() > 0) {
+                dict.merge(word.toString(), 1, Integer::sum);
+            }
+        }
+
+        try (final BufferedWriter writer = new BufferedWriter(new FileWriter(args[1]))) {
+            dict.entrySet()
+                    .stream()
+                    .sorted((l, r) -> {
+                        int result = r.getValue().compareTo(l.getValue());
+                        if (result == 0) result = l.getKey().compareTo(r.getKey());
+                        return result;
+                    })
+                    .forEachOrdered((e) -> {
+                        try {
+                            writer.write(e.getValue().toString() + " " + e.getKey());
+                            writer.newLine();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                            System.exit(1);
+                        }
+                    });
+        }
     }
-  }
 }
