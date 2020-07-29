@@ -16,6 +16,23 @@
 #define __forceinline __attribute__((always_inline)) inline
 #endif
 
+#if __APPLE__
+#define lseek64 lseek
+#endif
+
+#if __linux__
+#include <linux/version.h>
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,22)
+#define _MAP_POPULATE_AVAILABLE
+#endif
+#endif
+
+#ifdef _MAP_POPULATE_AVAILABLE
+#define MMAP_FLAGS (MAP_PRIVATE | MAP_POPULATE)
+#else
+#define MMAP_FLAGS MAP_PRIVATE
+#endif
+
 typedef unsigned char byte;
 typedef unsigned int uint;
 typedef unsigned long long ullong;
@@ -184,7 +201,7 @@ int main(int argc, char **argv) {
 
 	const ullong fsz = lseek64(fd, 0, SEEK_END);
 	const byte *fbegin =
-		(const byte *)mmap(NULL, fsz, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
+		(const byte *)mmap(NULL, fsz, PROT_READ, MMAP_FLAGS, fd, 0);
 
 	static byte lc[256];
 	memset(lc, 0, sizeof(lc));

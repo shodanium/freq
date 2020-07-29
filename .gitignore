@@ -14,3 +14,6 @@ junk/
 # linux binaries
 bin/freq*
 bin/hack*
+
+# osx trash
+*.dSYM
