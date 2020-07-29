@@ -22,6 +22,23 @@
 #include <unistd.h>
 #endif
 
+#if __APPLE__
+#define lseek64 lseek
+#endif
+
+#if __linux__
+#include <linux/version.h>
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,22)
+#define _MAP_POPULATE_AVAILABLE
+#endif
+#endif
+
+#ifdef _MAP_POPULATE_AVAILABLE
+#define MMAP_FLAGS (MAP_PRIVATE | MAP_POPULATE)
+#else
+#define MMAP_FLAGS MAP_PRIVATE
+#endif
+
 constexpr uint32_t H = 2166136261;
 
 int usage(char *process_name) {
@@ -88,8 +105,14 @@ int main(int argc, char **argv) {
 	}
 
 	const size_t fsz = lseek64(fd, 0, SEEK_END);
+
+	if (fsz == -1) {
+		std::cerr << "Failed to calculate file size" << std::endl;
+		exit(1);
+	}
+
 	const uint8_t *begin = reinterpret_cast<const uint8_t *>(
-		mmap(NULL, fsz, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0));
+		mmap(NULL, fsz, PROT_READ, MMAP_FLAGS, fd, 0));
 
 	char letters[256];
 	for (size_t i = 0; i < 256; ++i) {
