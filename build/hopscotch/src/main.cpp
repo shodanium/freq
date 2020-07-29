@@ -135,20 +135,11 @@ int main(int argc, char **argv) {
         word[i] = letters[word[i]];
       }
 
-      // const std::size_t precalculated_hash = std::hash<std::string>()(word);
-
       if (map.find(word) != map.end()) {
         map[word]++;
       } else {
         map[word] = 1;
       }
-
-      // words.emplace_back(std::string(start, len));
-
-      // auto &text = words.back();
-      // for (size_t i = 0; i < len; ++i) {
-      //   text[i] = letters[text[i]];
-      // }
     }
 
     len = 0;
@@ -169,7 +160,6 @@ int main(int argc, char **argv) {
   });
 
   for (const auto& word : words) {
-    // std::cout << word.text << " " << word.occurances << std::endl;
     fprintf(out, "%d %s\n", word.occurances, word.text.c_str());
   }
 }
